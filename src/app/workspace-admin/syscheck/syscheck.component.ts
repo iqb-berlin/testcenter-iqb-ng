@@ -67,9 +67,8 @@ export class SyscheckComponent implements OnInit {
       this.tableselectionCheckbox.selected.forEach(element => {
         selectedReports.push(element.id);
       });
-      // TODO determine OS dependent line ending char and use this
       this.mds.setSpinnerOn();
-      this.bs.getSysCheckReport(selectedReports, ';', '"', '\n').subscribe(
+      this.bs.getReports('systemCheck', selectedReports).subscribe(
       (response) => {
         this.mds.setSpinnerOff();
         if (response === false) {

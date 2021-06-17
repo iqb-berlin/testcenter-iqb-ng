@@ -78,55 +78,18 @@ export class ResultsComponent implements OnInit {
         selectedGroups.push(element.groupname);
       });
       this.mds.setSpinnerOn();
-      this.bs.getResponses(selectedGroups).subscribe(
-      (responseData: UnitResponse[]) => {
-        this.mds.setSpinnerOff();
-        if (responseData.length > 0) {
-          const columnDelimiter = ';';
-          const lineDelimiter = '\n';
-          let myCsvData = 'groupname' + columnDelimiter
-              + 'loginname' + columnDelimiter
-              + 'code' + columnDelimiter
-              + 'bookletname' + columnDelimiter
-              + 'unitname' + columnDelimiter
-              + 'responses' + columnDelimiter
-              + 'restorePoint' + columnDelimiter
-              + 'responseType' + columnDelimiter
-              + 'response-ts' + columnDelimiter
-              + 'restorePoint-ts' + columnDelimiter
-              + 'laststate' + lineDelimiter;
-          responseData.forEach((resp: UnitResponse) => {
-            myCsvData += '"' + resp.groupname + '"' + columnDelimiter
-                + '"' + resp.loginname + '"' + columnDelimiter
-                + '"' + resp.code + '"' + columnDelimiter
-                + '"' + resp.bookletname + '"' + columnDelimiter
-                + '"' + resp.unitname + '"' + columnDelimiter;
-            if ((resp.responses !== null) && (resp.responses.length > 0)) {
-              myCsvData += resp.responses.replace(/\\"/g, '""') + columnDelimiter;
+      this.bs.getReports('response', selectedGroups).subscribe(
+        (response) => {
+          this.mds.setSpinnerOff();
+          if (response === false) {
+            this.snackBar.open('Keine Daten verfügbar.', 'Fehler', {duration: 3000});
+          } else {
+            const reportData = response as Blob;
+            if (reportData.size > 0) {
+              saveAs(reportData, 'iqb-testcenter-responses.csv');
             } else {
-              myCsvData += columnDelimiter;
+              this.snackBar.open('Keine Daten verfügbar.', 'Fehler', {duration: 3000});
             }
-            if ((resp.restorepoint !== null) && (resp.restorepoint.length > 0)) {
-              myCsvData += resp.restorepoint.replace(/\\"/g, '""') + columnDelimiter;
-            } else {
-              myCsvData += columnDelimiter;
-            }
-            if ((resp.responsetype !== null) && (resp.responsetype.length > 0)) {
-              myCsvData += '"' + resp.responsetype + '"' + columnDelimiter;
-            } else {
-              myCsvData += columnDelimiter;
-            }
-            myCsvData += resp.responses_ts + columnDelimiter + resp.restorepoint_ts + columnDelimiter;
-            if ((resp.laststate !== null) && (resp.laststate.length > 0)) {
-              myCsvData += '"' + resp.laststate + '"' + lineDelimiter;
-            } else {
-              myCsvData += lineDelimiter;
-            }
-          });
-          const blob = new Blob([myCsvData], {type: 'text/csv;charset=utf-8'});
-          saveAs(blob, 'iqb-testcenter-responses.csv');
-        } else {
-          this.snackBar.open('Keine Daten verfügbar.', 'Fehler', {duration: 3000});
         }
         this.tableselectionCheckbox.clear();
       });

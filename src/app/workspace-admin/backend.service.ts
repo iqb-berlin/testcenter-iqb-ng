@@ -163,6 +163,27 @@ export class BackendService {
       );
   }
 
+  getReports(type: string, ids: string[]) : Observable<Blob | boolean> {
+    return this.http
+      .get(`${this.serverUrl}workspace/${this.wds.wsId}/reports`,
+        {
+          params: {
+            type,
+            ids: ids.join(','),
+          },
+          headers: {
+            Accept: 'text/csv'
+          },
+          responseType: 'blob'
+        })
+      .pipe(
+        catchError((err: ApiError) => {
+          console.warn(`getReports Api-Error: ${err.code} ${err.info} `);
+          return of(false);
+        })
+      );
+  }
+
   downloadFile(fileType: string, fileName: string): Observable<Blob | boolean> {
     return this.http
       .get(`${this.serverUrl}workspace/${this.wds.wsId}/file/${fileType}/${fileName}`, { responseType: 'blob' })
