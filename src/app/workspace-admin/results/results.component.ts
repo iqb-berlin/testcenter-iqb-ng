@@ -164,29 +164,21 @@ export class ResultsComponent implements OnInit {
         selectedGroups.push(element.groupname);
       });
       this.mds.setSpinnerOn();
-      this.bs.getLogs(selectedGroups).subscribe(
-      (responseData: LogData[]) => {
-        this.mds.setSpinnerOff();
-        if (responseData.length > 0) {
-          const columnDelimiter = ';';
-          const lineDelimiter = '\n';
-          let myCsvData = 'groupname' + columnDelimiter + 'loginname' + columnDelimiter + 'code' + columnDelimiter +
-              'bookletname' + columnDelimiter + 'unitname' + columnDelimiter +
-              'timestamp' + columnDelimiter + 'logentry' + lineDelimiter;
-          responseData.forEach((resp: LogData) => {
-            if ((resp.logentry !== null) && (resp.logentry.length > 0)) {
-             myCsvData += '"' + resp.groupname + '"' + columnDelimiter + '"' + resp.loginname + '"' + columnDelimiter + '"' + resp.code + '"' + columnDelimiter +
-              '"' + resp.bookletname + '"' + columnDelimiter + '"' + resp.unitname + '"' + columnDelimiter  + '"' +
-              resp.timestamp.toString() + '"' + columnDelimiter  + resp.logentry.replace(/\\"/g, '""')  + lineDelimiter;
+      this.bs.getReports('log', selectedGroups).subscribe(
+        (response) => {
+          this.mds.setSpinnerOff();
+          if (response === false) {
+            this.snackBar.open('Keine Daten verfügbar.', 'Fehler', {duration: 3000});
+          } else {
+            const reportData = response as Blob;
+            if (reportData.size > 0) {
+              saveAs(reportData, 'iqb-testcenter-logs.csv');
+            } else {
+              this.snackBar.open('Keine Daten verfügbar.', 'Fehler', {duration: 3000});
             }
-          });
-          const blob = new Blob([myCsvData], {type: 'text/csv;charset=utf-8'});
-          saveAs(blob, 'iqb-testcenter-logs.csv');
-        } else {
-          this.snackBar.open('Keine Daten verfügbar.', 'Fehler', {duration: 3000});
-        }
-        this.tableselectionCheckbox.clear();
-      });
+          }
+          this.tableselectionCheckbox.clear();
+        });
     }
   }
 
